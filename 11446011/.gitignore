@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+/media/
+.env
+.DS_Store
+/sandbox/clean/
+/sandbox/test.wsb

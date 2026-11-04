@@ -1,0 +1,58 @@
+{% extends "courses/base.html" %}
+{% block title %}課程查詢{% endblock %}
+{% block content %}
+<h1>課程查詢</h1>
+
+<p class="meta"><strong>{{ phase_name }}</strong> ·{{ phase_desc }}(期間 {{ phase_date }})· 目前 {{ credits }} 學分{% if setting.phase == 1 %} · 已登記 {{ registered }} 門志願{% endif %}</p>
+
+<form method="get" class="filters">
+  <div class="field"><label>關鍵字</label><input class="input" name="q" value="{{ f.q }}" placeholder="課號 / 課名 / 教師 / 教室"></div>
+  <div class="field"><label>系所</label>
+    <select class="input" name="dept">{% for d in depts %}<option {% if f.dept == d %}selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+  <div class="field"><label>年級</label>
+    <select class="input" name="year"><option value="0">全部</option>{% for y in "1234" %}<option value="{{ y }}" {% if f.year == y %}selected{% endif %}>{{ y }} 年級</option>{% endfor %}</select></div>
+  <div class="field"><label>類別</label>
+    <select class="input" name="type">{% for t in types %}<option {% if f.type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}</select></div>
+  <div class="field"><label>星期</label>
+    <select class="input" name="day"><option value="0">全部</option>{% for v, l in days %}<option value="{{ v }}" {% if f.day == v %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="field"><label>節次</label>
+    <select class="input" name="per"><option value="0">全部</option>{% for p in periods %}<option value="{{ p }}" {% if f.per == p %}selected{% endif %}>第 {{ p }} 節</option>{% endfor %}</select></div>
+  <div class="field"><label>大樓</label>
+    <select class="input" name="bld">{% for b in buildings %}<option {% if f.bld == b %}selected{% endif %}>{{ b }}</option>{% endfor %}</select></div>
+  <div class="row">
+    <label class="row"><input type="checkbox" name="no_conflict" value="1" {% if f.no_conflict %}checked{% endif %}> 不衝堂</label>
+    <label class="row"><input type="checkbox" name="star" value="1" {% if f.star %}checked{% endif %}> 只看收藏</label>
+  </div>
+  <div class="row"><button class="btn btn-primary">查詢</button><a class="btn btn-secondary" href="{% url 'courses:search' %}">清除</a></div>
+</form>
+
+{% if relaxed %}<div class="warn">沒有完全符合的課程，已放寬「{{ relaxed|join:"、" }}」條件，以下為相近的課程。</div>{% endif %}
+<p class="meta">共 {{ cards|length }} 門課程</p>
+<div class="grid cols-3">
+{% for c in cards %}
+  <article class="c-card">
+    <div class="row spread">
+      <span class="{% if c.type == '必修' %}tag tag-accent{% else %}tag tag-neutral{% endif %}">{{ c.type }}{% if c.area %}·{{ c.area }}{% endif %}</span>
+      <form method="post" action="{% url 'courses:star' c.code %}" class="inline">
+        {% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+        <button class="star {% if c.view.starred %}on{% endif %}" title="收藏" aria-label="收藏">{% if c.view.starred %}★{% else %}☆{% endif %}</button>
+      </form>
+    </div>
+    <h3><a href="{% url 'courses:detail' c.code %}?next={{ next|urlencode }}">{{ c.name }}</a></h3>
+    <div class="meta">{{ c.code }} · {{ c.teacher }} · {{ c.credits }} 學分</div>
+    <div class="meta">{{ c.view.time }} · {{ c.place }}</div>
+    <div class="bar"><i class="{% if c.percent >= 90 %}hot{% endif %}" style="width:{{ c.percent }}%"></i></div>
+    <div class="row spread meta"><span>{{ c.enrolled_count }}/{{ c.capacity }}</span><span {% if c.is_full or not c.is_open %}class="warn"{% endif %}>{{ c.view.seat_note }}</span></div>
+    {% if c.view.conflict %}<div class="warn">⚠ 與已選課程衝堂</div>{% endif %}
+    {% if c.view.blocked %}<div class="warn">⚠ 先修未通過({{ c.prereq }})</div>{% endif %}
+    {% if c.needs_code %}<div class="meta">需授權碼</div>{% endif %}
+    <form method="post" action="{% url 'courses:act' c.code %}">
+      {% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+      <button class="{{ c.view.cls }} btn-block">{{ c.view.label }}</button>
+    </form>
+  </article>
+{% empty %}
+  <p>找不到符合條件的課程,請放寬篩選條件。</p>
+{% endfor %}
+</div>
+{% endblock %}

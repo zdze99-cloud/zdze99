@@ -1,0 +1,30 @@
+{% extends "courses/base.html" %}
+{% block title %}畢業檢核{% endblock %}
+{% block content %}
+<h1>畢業檢核</h1>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px">
+  <div class="stat"><span class="meta">已修學分</span><b>{{ earned }}</b><span class="meta">畢業應修 {{ total }} 學分</span></div>
+  <div class="stat"><span class="meta">本學期修習中</span><b>{{ prog }}</b><span class="meta">計入可抵學分</span></div>
+  <div class="stat"><span class="meta">尚缺學分</span><b {% if missing %}style="color:var(--color-accent-700)"{% endif %}>{{ missing }}</b><span class="meta">扣除修習中後</span></div>
+  <div class="stat"><span class="meta">英文門檻</span><b style="color:var(--color-accent-700)">未通過</b><span class="meta">TOEIC 750</span></div>
+</div>
+
+<section class="panel">
+  <h4>學分類別</h4>
+  <table class="tbl">
+    {% for r in rows %}
+    <tr><th style="width:9em">{{ r.key }}</th>
+      <td><div class="progress"><i style="width:{{ r.p1 }}%"></i><i style="width:{{ r.p2 }}%"></i></div></td>
+      <td>{{ r.text }}</td><td><span class="{{ r.cls }}">{{ r.status }}</span></td></tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section class="panel">
+  <h4>必修課程</h4>
+  <table class="tbl">
+    {% for r in req_rows %}<tr><td>{{ r.name }}</td>
+      <td {% if r.status == '修習中' %}style="color:var(--color-accent-700)"{% elif r.status == '未修' %}style="color:var(--color-neutral-600)"{% endif %}>{{ r.status }}</td></tr>{% endfor %}
+  </table>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "courses/base.html" %}
+{% block title %}選課紀錄{% endblock %}
+{% block content %}
+<h1>選課紀錄</h1>
+<table class="tbl">
+  <tr><th>時間</th><th>階段</th><th>動作</th><th>課程</th><th>結果</th></tr>
+  {% for l in logs %}
+  <tr><td>{{ l.at }}</td><td>{{ l.stage }}</td><td>{{ l.action }}</td><td>{{ l.course }}</td>
+    <td><span class="{% if l.ok %}tag tag-neutral{% else %}tag tag-accent{% endif %}">{{ l.result }}</span></td></tr>
+  {% empty %}<tr><td colspan="5">尚無紀錄。</td></tr>{% endfor %}
+</table>
+{% endblock %}

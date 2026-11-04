@@ -1,0 +1,30 @@
+{% extends "courses/base.html" %}
+{% block title %}我的課表{% endblock %}
+{% block content %}
+<div class="row spread">
+  <h1>我的課表</h1>
+  <div class="row"><span class="tag tag-neutral">{{ credits }} 學分</span>
+    <a class="btn btn-secondary" href="{% url 'courses:schedule-ics' %}">匯出 .ics</a></div>
+</div>
+
+<div class="sched">
+  <div class="head"></div>
+  {% for n, d in days %}<div class="head" style="grid-row:1;grid-column:{{ n|add:1 }}">週{{ d }}</div>{% endfor %}
+  {% for n, a, b in periods %}<div class="per" style="grid-row:{{ n|add:1 }};grid-column:1">第 {{ n }} 節<br><small>{{ a }}</small></div>{% endfor %}
+  {% for r, c in cells %}<div class="cell" style="grid-row:{{ r }};grid-column:{{ c }}"></div>{% endfor %}
+  {% for b in blocks %}
+    <a class="blk" style="grid-row:{{ b.row }};grid-column:{{ b.col }}" href="{% url 'courses:detail' b.course.code %}">
+      {{ b.course.name }}<small>{{ b.course.place }}</small></a>
+  {% endfor %}
+</div>
+
+<div class="only-narrow">
+  <div class="row" style="margin-bottom:12px">
+    {% for n, d in days %}<a class="btn {% if n == day %}btn-primary{% else %}btn-secondary{% endif %}" href="?day={{ n }}">{{ d }}</a>{% endfor %}
+  </div>
+  {% for e in day_list %}
+    <div class="c-card" style="margin-bottom:8px"><strong>{{ e.course.name }}</strong>
+      <span class="meta">{{ e.per }} · {{ e.time }} · {{ e.course.place }} · {{ e.course.teacher }}</span></div>
+  {% empty %}<p class="meta">這天沒有課。</p>{% endfor %}
+</div>
+{% endblock %}

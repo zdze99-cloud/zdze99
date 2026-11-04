@@ -1,0 +1,85 @@
+{% extends "courses/base.html" %}
+{% block title %}{{ c.name }}{% endblock %}
+{% block content %}
+<p><a href="{% if next %}{{ next }}{% else %}{% url 'courses:search' %}{% endif %}">← 返回</a></p>
+<div class="row spread">
+  <div>
+    <div class="kicker">{{ c.code }} · {{ c.type }}{% if c.area %}·{{ c.area }}{% endif %}</div>
+    <h1>{{ c.name }}</h1>
+  </div>
+  {% if not need_code %}
+  <form method="post" action="{% url 'courses:act' c.code %}">
+    {% csrf_token %}<input type="hidden" name="next" value="{% url 'courses:detail' c.code %}">
+    <button class="{{ c.view.cls }}">{% if c.view.mine %}退選此課程{% elif c.view.label == '加選' %}加選此課程 →{% else %}{{ c.view.label }}{% endif %}</button>
+  </form>
+  {% endif %}
+</div>
+<p>{{ c.description }}</p>
+
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+  <section class="panel">
+    <h4>課程資訊</h4>
+    <table class="tbl">
+      <tr><th>授課教師</th><td>{{ c.teacher }}</td></tr>
+      <tr><th>學分</th><td>{{ c.credits }} 學分</td></tr>
+      <tr><th>上課時間</th><td>{{ c.view.time }}</td></tr>
+      <tr><th>教室</th><td>{{ c.place }}</td></tr>
+      <tr><th>開課系所</th><td>{{ c.dept }}</td></tr>
+      <tr><th>名額</th><td>{{ c.enrolled_count }}/{{ c.capacity }}</td></tr>
+      {% if c.book %}<tr><th>教科書</th><td>{{ c.book }}</td></tr>{% endif %}
+    </table>
+  </section>
+
+  <section class="panel">
+    <h4>加選前檢核</h4>
+    <table class="tbl">
+      {% for i in checks %}
+      <tr><td style="width:2em;{% if not i.ok %}color:var(--color-accent){% endif %}">{{ i.mark }}</td><th>{{ i.name }}</th><td>{{ i.note }}</td></tr>
+      {% endfor %}
+    </table>
+    {% if need_code %}
+      <form method="post" action="{% url 'courses:use-code' c.code %}" class="grid" style="margin-top:16px">
+        {% csrf_token %}
+        {% if my_req.status == 'approved' %}<p class="meta">您的加簽申請已核准,授權碼:<strong>{{ my_req.code }}</strong></p>
+        {% elif my_req %}<p class="meta">加簽申請狀態:{{ my_req.get_status_display }}</p>{% endif %}
+        <div class="field"><label>授權碼</label><input class="input" name="code" placeholder="XXXX-XXXX" required></div>
+        <button class="btn btn-primary">以授權碼加選 →</button>
+      </form>
+    {% endif %}
+  </section>
+
+  {% if my_req or can_request %}
+  <section class="panel">
+    <h4>加簽申請</h4>
+    {% if my_req %}
+      <p>狀態:<span class="{% if my_req.status == 'pending' %}tag tag-outline{% else %}tag tag-neutral{% endif %}">{{ my_req.get_status_display }}</span></p>
+      <p class="meta">理由:{{ my_req.reason }}</p>
+      {% if my_req.status == 'approved' %}<p>授權碼:<strong><code>{{ my_req.code }}</code></strong>(特殊加選階段輸入)</p>{% endif %}
+    {% else %}
+      <p class="meta">本課程{% if c.needs_code %}需要授權碼{% else %}已額滿{% endif %},可向 {{ c.teacher }} 老師申請加簽。核准後會取得授權碼。</p>
+      <form method="post" action="{% url 'courses:request' c.code %}" class="grid">
+        {% csrf_token %}
+        <div class="field">
+          <label for="{{ form.reason.id_for_label }}">{{ form.reason.label }}</label>
+          {{ form.reason }}
+          {% for e in form.reason.errors %}<div class="warn">{{ e }}</div>{% endfor %}
+        </div>
+        <button class="btn btn-primary">送出加簽申請 →</button>
+      </form>
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if c.topics %}
+  <section class="panel">
+    <h4>課程綱要</h4>
+    <ol>{% for t in c.topics %}<li>{{ t }}</li>{% endfor %}<li>綜合複習與期末評量</li></ol>
+  </section>
+  {% endif %}
+
+  <section class="panel">
+    <h4>成績評量</h4>
+    <table class="tbl">{% for k, p in grade %}<tr><th>{{ k }}</th><td>{{ p }}%</td></tr>{% endfor %}</table>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "courses/base.html" %}
+{% block title %}加簽管理{% endblock %}
+{% block content %}
+<h1>加簽管理</h1>
+<div class="row" style="margin-bottom:16px">
+  {% for m in my_courses %}
+    <a class="btn {% if m.code == c.code %}btn-primary{% else %}btn-secondary{% endif %}" href="?course={{ m.code }}">{{ m.code }} {{ m.name }}</a>
+  {% endfor %}
+</div>
+{% if not c %}<p class="meta">您目前沒有授課的課程。</p>{% else %}
+<p class="meta">{{ c.name }} · 名額 {{ c.enrolled_count }}/{{ c.capacity }} · 授權碼可超收</p>
+
+<form method="post" action="{% url 'courses:teacher-issue' %}">
+  {% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+  <table class="tbl">
+    <tr><th></th><th>學生</th><th>學號</th><th>系級</th><th>理由</th><th>狀態</th><th>授權碼</th><th></th></tr>
+    {% for r in reqs %}
+    <tr>
+      <td>{% if r.status == 'pending' %}<input type="checkbox" name="rid" value="{{ r.pk }}" aria-label="選取">{% endif %}</td>
+      <td>{{ r.name }}</td><td>{{ r.sid }}</td><td>{{ r.dept }}</td><td>{{ r.reason }}</td>
+      <td><span class="{% if r.status == 'pending' %}tag tag-outline{% else %}tag tag-neutral{% endif %}">{{ r.get_status_display }}</span></td>
+      <td><code>{{ r.code }}</code></td>
+      <td>{% if r.status == 'pending' %}<button class="btn btn-secondary" formaction="{% url 'courses:teacher-reject' r.pk %}" formnovalidate>婉拒</button>{% endif %}</td>
+    </tr>
+    {% empty %}<tr><td colspan="8">沒有加簽申請。</td></tr>{% endfor %}
+  </table>
+  <p style="margin-top:12px"><button class="btn btn-primary">核發勾選的授權碼 →</button></p>
+</form>
+{% endif %}
+{% endblock %}

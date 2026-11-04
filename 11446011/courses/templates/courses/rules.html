@@ -1,0 +1,33 @@
+{% extends "courses/base.html" %}
+{% block title %}選課設定{% endblock %}
+{% block content %}
+<h1>選課設定</h1>
+
+<section class="panel">
+  <h4>目前階段</h4>
+  <form method="post" action="{% url 'courses:phase' %}" class="phasebar">
+    {% csrf_token %}<input type="hidden" name="next" value="{{ next }}">
+    {% for p, label in phases %}<button name="phase" value="{{ p }}" class="{% if p == setting.phase %}on{% endif %}">{{ label }}</button>{% endfor %}
+  </form>
+</section>
+
+<section class="panel">
+  <h4>學分上下限</h4>
+  <form method="post" class="row">
+    {% csrf_token %}
+    <div class="field"><label>最低</label><input class="input" type="number" name="min_credits" value="{{ setting.min_credits }}" min="1"></div>
+    <div class="field"><label>上限</label><input class="input" type="number" name="max_credits" value="{{ setting.max_credits }}" min="1"></div>
+    <button class="btn btn-primary" style="align-self:end">儲存</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h4>第一階段分發優先權重</h4>
+  <table class="tbl">
+    {% for r in rules %}
+    <tr><th>{{ r.key }}</th><td>{{ r.description }}</td>
+      <td><form method="post">{% csrf_token %}<button name="rule" value="{{ r.pk }}" class="btn {% if r.on %}btn-primary{% else %}btn-secondary{% endif %}">{% if r.on %}已啟用{% else %}未啟用{% endif %}</button></form></td></tr>
+    {% endfor %}
+  </table>
+</section>
+{% endblock %}

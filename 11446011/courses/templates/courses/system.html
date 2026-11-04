@@ -1,0 +1,16 @@
+{% extends "courses/base.html" %}
+{% block title %}系統監控{% endblock %}
+{% block content %}
+<div class="row spread"><h1>系統監控</h1><a class="btn btn-secondary" href="{% url 'courses:system' %}">重新整理</a></div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));margin-bottom:24px">
+  <div class="stat"><span class="meta">線上人數</span><b>{{ online }}</b></div>
+  <div class="stat"><span class="meta">排隊人數</span><b>{{ queue }}</b></div>
+  <div class="stat"><span class="meta">快取命中率</span><b>{{ hit }}%</b></div>
+</div>
+<section class="panel"><h4>每秒請求量(示意)</h4><div class="bars">{% for h in bars %}<i style="height:{{ h }}%"></i>{% endfor %}</div></section>
+<section class="panel"><h4>節點負載(示意)</h4>
+  <table class="tbl">{% for name, pct in nodes %}
+    <tr><th style="width:8em">{{ name }}</th><td><div class="bar"><i class="{% if pct >= 75 %}hot{% endif %}" style="width:{{ pct }}%"></i></div></td><td>{{ pct }}%</td></tr>
+  {% endfor %}</table></section>
+<p class="meta">此頁數字為隨機示意資料,未連接真實監控。</p>
+{% endblock %}

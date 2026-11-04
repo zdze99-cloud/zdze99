@@ -1,0 +1,63 @@
+{% extends "courses/base.html" %}
+{% block title %}選課清單{% endblock %}
+{% block content %}
+<div class="row spread">
+  <h1>選課清單</h1>
+  <div class="row"><strong>{{ credits }} 學分</strong>
+    <span class="{% if credit_ok %}tag tag-neutral{% else %}tag tag-accent{% endif %}">{{ status }}</span></div>
+</div>
+<p class="meta">學分範圍:{{ setting.min_credits }}–{{ setting.max_credits }}</p>
+
+{% if setting.phase == 1 %}
+<section class="panel">
+  <h4>第一階段志願序</h4>
+  {% for c in regs %}<div class="row"><span class="tag tag-outline">第 {{ forloop.counter }} 志願</span> {{ c }}</div>
+  {% empty %}<p class="meta">尚未登記任何志願。請到「課程查詢」登記。</p>{% endfor %}
+  {% if regs %}
+  <form method="post" action="{% url 'courses:lottery' %}" style="margin-top:12px">{% csrf_token %}
+    <button class="btn btn-primary">截止並執行分發 →</button></form>
+  {% endif %}
+</section>
+{% endif %}
+
+<section class="panel">
+  <h4>已選課程({{ courses|length }})</h4>
+  <table class="tbl">
+    <tr><th>課號</th><th>課名</th><th>教師</th><th>學分</th><th>時間</th><th>教室</th><th></th></tr>
+    {% for c in courses %}
+    <tr>
+      <td>{{ c.code }}</td><td><a href="{% url 'courses:detail' c.code %}">{{ c.name }}</a></td>
+      <td>{{ c.teacher }}</td><td>{{ c.credits }}</td><td>{{ c.slots|length }} 個時段</td><td>{{ c.place }}</td>
+      <td><form method="post" action="{% url 'courses:drop' c.code %}">{% csrf_token %}
+        <button class="btn btn-secondary">退選</button></form></td>
+    </tr>
+    {% empty %}<tr><td colspan="7">目前沒有選課。</td></tr>{% endfor %}
+  </table>
+</section>
+
+<section class="panel">
+  <h4>我的加簽申請</h4>
+  <table class="tbl">
+    <tr><th>課程</th><th>理由</th><th>狀態</th><th>授權碼</th></tr>
+    {% for r in requests %}
+    <tr><td><a href="{% url 'courses:detail' r.course.code %}">{{ r.course }}</a></td><td>{{ r.reason }}</td>
+      <td><span class="{% if r.status == 'pending' %}tag tag-outline{% else %}tag tag-neutral{% endif %}">{{ r.get_status_display }}</span></td>
+      <td><code>{{ r.code }}</code></td></tr>
+    {% empty %}<tr><td colspan="4">尚未申請加簽。額滿或需授權碼的課程可在課程頁申請。</td></tr>{% endfor %}
+  </table>
+</section>
+
+<section class="panel">
+  <h4>我的收藏</h4>
+  <div class="grid cols-3">
+    {% for c in wish %}
+    <div class="c-card">
+      <strong>{{ c.name }}</strong><span class="meta">{{ c.code }} · {{ c.teacher }} · {{ c.view.time }}</span>
+      <form method="post" action="{% url 'courses:act' c.code %}">{% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'courses:list' %}">
+        <button class="{{ c.view.cls }}">{{ c.view.label }}</button></form>
+    </div>
+    {% empty %}<p class="meta">在課程查詢按 ☆ 即可收藏。</p>{% endfor %}
+  </div>
+</section>
+{% endblock %}

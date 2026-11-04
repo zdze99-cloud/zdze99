@@ -1,0 +1,19 @@
+{% extends "courses/base.html" %}
+{% block title %}開課管理{% endblock %}
+{% block content %}
+<h1>開課管理</h1>
+<table class="tbl">
+  <tr><th>課號</th><th>課名</th><th>系所</th><th>教師</th><th>學分</th><th>人數</th><th>上限</th><th>狀態</th></tr>
+  {% for c in courses %}
+  <tr>
+    <td>{{ c.code }}</td><td>{{ c.name }}</td><td>{{ c.dept }}</td><td>{{ c.teacher }}</td><td>{{ c.credits }}</td>
+    <td>{{ c.enrolled_count }}</td>
+    <td><form method="post" action="{% url 'courses:admin-course-update' c.code %}" class="inline">{% csrf_token %}
+      <input class="input" type="number" name="capacity" value="{{ c.capacity }}" min="{{ c.enrolled_count }}" style="width:90px">
+      <button class="btn btn-secondary">儲存</button></form></td>
+    <td><form method="post" action="{% url 'courses:admin-course-update' c.code %}">{% csrf_token %}
+      <button name="toggle" value="1" class="btn {% if c.is_open %}btn-secondary{% else %}btn-primary{% endif %}">{% if c.is_open %}開課中 · 點此停開{% else %}已停開 · 點此恢復{% endif %}</button></form></td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}
