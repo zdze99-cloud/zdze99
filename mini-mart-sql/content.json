@@ -1,0 +1,397 @@
+{
+  "tables": [
+    {
+      "name": "categories",
+      "label": "商品分類",
+      "description": "商品所屬的分類。每個商品屬於一個分類，一個分類可以包含多個商品。",
+      "columns": [
+        {
+          "name": "category_id",
+          "type": "INTEGER",
+          "key": "PK",
+          "nullable": false,
+          "description": "分類編號。"
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "key": "UNIQUE",
+          "nullable": false,
+          "description": "分類名稱，不可重複。"
+        }
+      ]
+    },
+    {
+      "name": "suppliers",
+      "label": "供應商",
+      "description": "供應商聯絡資料。一個供應商可以供應多個商品，也可以尚未供應任何商品；本案例每個商品只有一個主要供應商。",
+      "columns": [
+        {
+          "name": "supplier_id",
+          "type": "INTEGER",
+          "key": "PK",
+          "nullable": false,
+          "description": "供應商編號。"
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "key": "UNIQUE",
+          "nullable": false,
+          "description": "供應商名稱，不可重複。"
+        },
+        {
+          "name": "phone",
+          "type": "TEXT",
+          "key": "",
+          "nullable": false,
+          "description": "模擬電話，使用文字儲存以保留開頭的 0；不是真實聯絡資訊。"
+        }
+      ]
+    },
+    {
+      "name": "products",
+      "label": "商品",
+      "description": "商品主檔與期初庫存。現有庫存由期初、進貨及已完成銷售計算，避免另外儲存一個容易不同步的庫存數字。",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "INTEGER",
+          "key": "PK",
+          "nullable": false,
+          "description": "商品編號。"
+        },
+        {
+          "name": "name",
+          "type": "TEXT",
+          "key": "",
+          "nullable": false,
+          "description": "商品名稱。"
+        },
+        {
+          "name": "category_id",
+          "type": "INTEGER",
+          "key": "FK → categories.category_id",
+          "nullable": false,
+          "description": "商品所屬分類。"
+        },
+        {
+          "name": "supplier_id",
+          "type": "INTEGER",
+          "key": "FK → suppliers.supplier_id",
+          "nullable": false,
+          "description": "商品的主要供應商。"
+        },
+        {
+          "name": "unit_price",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "目前建議售價，單位為新臺幣元，必須大於或等於 0。"
+        },
+        {
+          "name": "opening_stock",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "2026-11-10 開店前的期初數量，必須大於或等於 0。"
+        },
+        {
+          "name": "reorder_level",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "補貨警戒量；現有庫存小於或等於此數量時列為待補貨。"
+        }
+      ]
+    },
+    {
+      "name": "stock_receipts",
+      "label": "進貨紀錄",
+      "description": "每列是一個商品的一次進貨。本案例簡化為不含退貨與盤點調整；所有紀錄均在基準日 2026-11-18 以前。",
+      "columns": [
+        {
+          "name": "receipt_id",
+          "type": "INTEGER",
+          "key": "PK",
+          "nullable": false,
+          "description": "進貨紀錄編號。"
+        },
+        {
+          "name": "product_id",
+          "type": "INTEGER",
+          "key": "FK → products.product_id",
+          "nullable": false,
+          "description": "這筆進貨的商品。"
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "進貨數量，必須大於 0。"
+        },
+        {
+          "name": "unit_cost",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "這次進貨的每件成本，單位為新臺幣元；不等於商品售價。"
+        },
+        {
+          "name": "received_at",
+          "type": "TEXT",
+          "key": "",
+          "nullable": false,
+          "description": "進貨日期時間，格式 YYYY-MM-DD HH:MM:SS。"
+        }
+      ]
+    },
+    {
+      "name": "sales",
+      "label": "銷售訂單",
+      "description": "每列是一張訂單；一張訂單可以包含多筆銷售明細。只有 completed 納入營收及庫存扣除，cancelled 保留供稽核與比較。",
+      "columns": [
+        {
+          "name": "sale_id",
+          "type": "INTEGER",
+          "key": "PK",
+          "nullable": false,
+          "description": "銷售訂單編號。"
+        },
+        {
+          "name": "sold_at",
+          "type": "TEXT",
+          "key": "",
+          "nullable": false,
+          "description": "訂單日期時間，格式 YYYY-MM-DD HH:MM:SS。"
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "key": "",
+          "nullable": false,
+          "description": "只允許 completed（已完成）或 cancelled（已取消）。"
+        }
+      ]
+    },
+    {
+      "name": "sale_items",
+      "label": "銷售明細",
+      "description": "連接訂單與商品，記錄每次購買數量和實際成交單價。歷史營收使用此表單價，不能改用商品目前售價；訂單 10 含折扣成交案例。",
+      "columns": [
+        {
+          "name": "sale_item_id",
+          "type": "INTEGER",
+          "key": "PK",
+          "nullable": false,
+          "description": "銷售明細編號。"
+        },
+        {
+          "name": "sale_id",
+          "type": "INTEGER",
+          "key": "FK → sales.sale_id",
+          "nullable": false,
+          "description": "所屬銷售訂單。"
+        },
+        {
+          "name": "product_id",
+          "type": "INTEGER",
+          "key": "FK → products.product_id",
+          "nullable": false,
+          "description": "售出商品。"
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "這張明細的購買數量，必須大於 0。"
+        },
+        {
+          "name": "unit_price",
+          "type": "INTEGER",
+          "key": "",
+          "nullable": false,
+          "description": "本次成交單價，單位為新臺幣元；保留折扣與歷史價格。"
+        }
+      ]
+    }
+  ],
+  "lessons": [
+    {
+      "id": "q01",
+      "title": "01｜找出 40 元以下的商品",
+      "level": "入門",
+      "concepts": [
+        "SELECT",
+        "WHERE",
+        "ORDER BY"
+      ],
+      "question": "店員想推薦平價商品：哪些商品目前售價不超過 40 元？請依價格由低至高排列，同價時依商品編號排列。",
+      "sql": "SELECT product_id, name, unit_price\nFROM products\nWHERE unit_price <= 40\nORDER BY unit_price ASC, product_id ASC;",
+      "explanation": "WHERE 逐列篩選商品；ORDER BY 決定顯示順序。可以把 40 改成 30，觀察符合條件的商品如何減少。使用 <= 會保留剛好等於門檻的商品。"
+    },
+    {
+      "id": "q02",
+      "title": "02｜合併商品、分類與供應商",
+      "level": "入門",
+      "concepts": [
+        "INNER JOIN",
+        "外鍵",
+        "欄位別名"
+      ],
+      "question": "商品清單上要同時顯示商品名稱、分類、主要供應商與售價，應如何連接三張表？",
+      "sql": "SELECT p.product_id, p.name AS product_name,\n       c.name AS category_name, s.name AS supplier_name,\n       p.unit_price\nFROM products AS p\nJOIN categories AS c ON c.category_id = p.category_id\nJOIN suppliers AS s ON s.supplier_id = p.supplier_id\nORDER BY c.category_id ASC, p.product_id ASC;",
+      "explanation": "JOIN 利用外鍵連接主檔；p、c、s 是表的別名。商品只存分類與供應商編號，分類名稱和電話只維護一次，可減少重複資料與修改不同步。"
+    },
+    {
+      "id": "q03",
+      "title": "03｜計算每張已完成訂單金額",
+      "level": "基礎",
+      "concepts": [
+        "JOIN",
+        "SUM",
+        "GROUP BY"
+      ],
+      "question": "店長要核對每張已完成訂單的成交金額；取消訂單不算營收。各訂單總金額是多少？",
+      "sql": "SELECT s.sale_id, s.sold_at,\n       SUM(si.quantity * si.unit_price) AS order_amount\nFROM sales AS s\nJOIN sale_items AS si ON si.sale_id = s.sale_id\nWHERE s.status = 'completed'\nGROUP BY s.sale_id, s.sold_at\nORDER BY s.sold_at ASC, s.sale_id ASC;",
+      "explanation": "一張訂單有多筆明細，所以先以訂單分組，再加總數量 × 成交單價。使用 sale_items.unit_price 可保留訂單 10 的折扣；products.unit_price 只是目前售價。結果共有 14 張已完成訂單。"
+    },
+    {
+      "id": "q04",
+      "title": "04｜找出營收最高的五項商品",
+      "level": "基礎",
+      "concepts": [
+        "JOIN",
+        "SUM",
+        "GROUP BY",
+        "LIMIT"
+      ],
+      "question": "只計算已完成訂單時，營收最高的五項商品是哪些？同時顯示銷量與營收，同額時依商品編號排列。",
+      "sql": "SELECT p.product_id, p.name,\n       SUM(si.quantity) AS units_sold,\n       SUM(si.quantity * si.unit_price) AS revenue\nFROM products AS p\nJOIN sale_items AS si ON si.product_id = p.product_id\nJOIN sales AS s ON s.sale_id = si.sale_id\nWHERE s.status = 'completed'\nGROUP BY p.product_id, p.name\nORDER BY revenue DESC, p.product_id ASC\nLIMIT 5;",
+      "explanation": "銷量和營收是不同指標：單價較高的商品即使數量較少，也可能排在營收前段。先彙總再用 LIMIT 5 取前五名；商品編號用來固定同額商品的順序。"
+    },
+    {
+      "id": "q05",
+      "title": "05｜篩選銷量至少十件的商品",
+      "level": "基礎",
+      "concepts": [
+        "WHERE",
+        "GROUP BY",
+        "HAVING"
+      ],
+      "question": "店長把累積已完成銷量至少 10 件的商品視為熱銷商品，這份名單有哪些商品？",
+      "sql": "SELECT p.product_id, p.name,\n       SUM(si.quantity) AS units_sold\nFROM products AS p\nJOIN sale_items AS si ON si.product_id = p.product_id\nJOIN sales AS s ON s.sale_id = si.sale_id\nWHERE s.status = 'completed'\nGROUP BY p.product_id, p.name\nHAVING SUM(si.quantity) >= 10\nORDER BY units_sold DESC, p.product_id ASC;",
+      "explanation": "WHERE 在分組前排除取消訂單；HAVING 在分組後篩選加總銷量。把 HAVING 門檻由 10 改成 15，會留下累積銷量更高的商品。"
+    },
+    {
+      "id": "q06",
+      "title": "06｜保留尚未供貨的供應商",
+      "level": "基礎",
+      "concepts": [
+        "LEFT JOIN",
+        "COUNT",
+        "零筆資料"
+      ],
+      "question": "列出所有供應商及旗下商品數；即使供應商目前沒有商品，也必須顯示 0。",
+      "sql": "SELECT s.supplier_id, s.name AS supplier_name,\n       COUNT(p.product_id) AS product_count\nFROM suppliers AS s\nLEFT JOIN products AS p ON p.supplier_id = s.supplier_id\nGROUP BY s.supplier_id, s.name\nORDER BY product_count DESC, s.supplier_id ASC;",
+      "explanation": "LEFT JOIN 保留全部供應商，沒有商品時右側欄位是 NULL。COUNT(p.product_id) 不計 NULL，因此新合作供應商會正確顯示 0；COUNT(*) 會把保留下來的空列也算成一列。"
+    },
+    {
+      "id": "q07",
+      "title": "07｜找出從未完成銷售的商品",
+      "level": "進階",
+      "concepts": [
+        "NOT EXISTS",
+        "相關子查詢"
+      ],
+      "question": "哪些商品在這份資料中完全沒有已完成的銷售紀錄？有取消訂單不算已完成銷售。",
+      "sql": "SELECT p.product_id, p.name\nFROM products AS p\nWHERE NOT EXISTS (\n  SELECT 1\n  FROM sale_items AS si\n  JOIN sales AS s ON s.sale_id = si.sale_id\n  WHERE si.product_id = p.product_id\n    AND s.status = 'completed'\n)\nORDER BY p.product_id ASC;",
+      "explanation": "NOT EXISTS 對每個商品檢查是否找不到已完成的銷售。結果包含旅行牙刷組與季節限定果凍；後者雖然有進貨，仍沒有銷售。『沒有銷售』不等於『沒有進貨』。"
+    },
+    {
+      "id": "q08",
+      "title": "08｜計算庫存並列出待補貨商品",
+      "level": "進階",
+      "concepts": [
+        "CTE",
+        "LEFT JOIN",
+        "COALESCE",
+        "CASE"
+      ],
+      "question": "截至基準日 2026-11-18，哪些商品庫存已到補貨警戒量或更低？依庫存由低至高列出，並計算補到警戒量兩倍所需的數量。",
+      "sql": "WITH received AS (\n  SELECT product_id, SUM(quantity) AS received_quantity\n  FROM stock_receipts\n  GROUP BY product_id\n),\nsold AS (\n  SELECT si.product_id, SUM(si.quantity) AS sold_quantity\n  FROM sale_items AS si\n  JOIN sales AS s ON s.sale_id = si.sale_id\n  WHERE s.status = 'completed'\n  GROUP BY si.product_id\n),\ninventory AS (\n  SELECT p.product_id, p.name, p.opening_stock, p.reorder_level,\n         COALESCE(r.received_quantity, 0) AS received_quantity,\n         COALESCE(s.sold_quantity, 0) AS sold_quantity,\n         p.opening_stock + COALESCE(r.received_quantity, 0)\n           - COALESCE(s.sold_quantity, 0) AS current_stock\n  FROM products AS p\n  LEFT JOIN received AS r ON r.product_id = p.product_id\n  LEFT JOIN sold AS s ON s.product_id = p.product_id\n)\nSELECT product_id, name, opening_stock,\n       received_quantity, sold_quantity, current_stock,\n       reorder_level,\n       MAX(0, reorder_level * 2 - current_stock) AS suggested_order_quantity,\n       CASE WHEN current_stock < 0 THEN '負庫存，需核對紀錄'\n            ELSE '待補貨' END AS stock_status\nFROM inventory\nWHERE current_stock <= reorder_level\nORDER BY current_stock ASC, product_id ASC;",
+      "explanation": "庫存＝期初＋進貨－已完成銷量。先分別彙總進貨和銷售，才不會把兩邊明細相乘。COALESCE 把沒有紀錄的 NULL 變成 0。蔬菜沙拉得到 -1，是刻意保留的資料異常，應核對漏記進貨或盤點差異；不能把負數直接改成 0 隱藏問題。補貨量只是此案例的簡化建議，不是自動下單。"
+    },
+    {
+      "id": "q09",
+      "title": "09｜找出售價高於同分類平均的商品",
+      "level": "進階",
+      "concepts": [
+        "AVG",
+        "相關子查詢",
+        "ROUND"
+      ],
+      "question": "店長想比較各分類內的高價商品：哪些商品的目前售價高於它所屬分類的平均售價？",
+      "sql": "SELECT p.product_id, p.name, c.name AS category_name,\n       p.unit_price,\n       (SELECT ROUND(AVG(p2.unit_price), 2)\n        FROM products AS p2\n        WHERE p2.category_id = p.category_id) AS category_average\nFROM products AS p\nJOIN categories AS c ON c.category_id = p.category_id\nWHERE p.unit_price > (\n  SELECT AVG(p3.unit_price)\n  FROM products AS p3\n  WHERE p3.category_id = p.category_id\n)\nORDER BY p.category_id ASC, p.product_id ASC;",
+      "explanation": "子查詢利用外層商品的 category_id，計算該分類的平均價。篩選使用未四捨五入的平均，顯示時才 ROUND；這是在比較商品目前售價，並非平均成交價或毛利。"
+    },
+    {
+      "id": "q10",
+      "title": "10｜觀察每日營收與累計營收",
+      "level": "選讀進階",
+      "concepts": [
+        "CTE",
+        "DATE",
+        "視窗函數"
+      ],
+      "question": "在有已完成交易的日期中，每日營收及從第一天起累計的營收分別是多少？",
+      "sql": "WITH daily_sales AS (\n  SELECT DATE(s.sold_at) AS sold_date,\n         SUM(si.quantity * si.unit_price) AS daily_revenue\n  FROM sales AS s\n  JOIN sale_items AS si ON si.sale_id = s.sale_id\n  WHERE s.status = 'completed'\n  GROUP BY DATE(s.sold_at)\n)\nSELECT sold_date, daily_revenue,\n       SUM(daily_revenue) OVER (\n         ORDER BY sold_date\n         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ) AS cumulative_revenue\nFROM daily_sales\nORDER BY sold_date ASC;",
+      "explanation": "CTE 先把明細彙總成每日營收；視窗 SUM 讓每一天仍保有一列，同時計算截至當天的累計值。只有取消交易或完全沒交易的日期不會自行補成 0；若要完整日曆，還需要日期表。"
+    }
+  ],
+  "comparisons": [
+    {
+      "id": "c01",
+      "title": "01｜INNER JOIN 與 LEFT JOIN",
+      "question": "列出所有供應商及其商品清單，沒有商品的供應商也要保留。",
+      "beforeSQL": "SELECT s.supplier_id, s.name AS supplier_name,\n       p.product_id, p.name AS product_name\nFROM suppliers AS s\nINNER JOIN products AS p ON p.supplier_id = s.supplier_id\nORDER BY s.supplier_id ASC, p.product_id ASC;",
+      "afterSQL": "SELECT s.supplier_id, s.name AS supplier_name,\n       p.product_id, p.name AS product_name\nFROM suppliers AS s\nLEFT JOIN products AS p ON p.supplier_id = s.supplier_id\nORDER BY s.supplier_id ASC, p.product_id ASC;",
+      "beforeExplanation": "INNER JOIN 只回傳連接成功的資料，因此沒有商品的新合作供應商消失了，共 18 列。",
+      "afterExplanation": "LEFT JOIN 保留所有供應商；新合作供應商新增一列，商品欄位為 NULL，共 19 列。",
+      "reason": "題目要求「所有供應商」，所以 LEFT JOIN 才完整回答。NULL 表示沒有配對商品，不是商品名稱為空字串。"
+    },
+    {
+      "id": "c02",
+      "title": "02｜COUNT(*) 與 COUNT(商品編號)",
+      "question": "計算所有供應商旗下的商品數，沒有商品的供應商應顯示 0。",
+      "beforeSQL": "SELECT s.supplier_id, s.name AS supplier_name,\n       COUNT(*) AS product_count\nFROM suppliers AS s\nLEFT JOIN products AS p ON p.supplier_id = s.supplier_id\nGROUP BY s.supplier_id, s.name\nORDER BY s.supplier_id ASC;",
+      "afterSQL": "SELECT s.supplier_id, s.name AS supplier_name,\n       COUNT(p.product_id) AS product_count\nFROM suppliers AS s\nLEFT JOIN products AS p ON p.supplier_id = s.supplier_id\nGROUP BY s.supplier_id, s.name\nORDER BY s.supplier_id ASC;",
+      "beforeExplanation": "即使沒有商品，LEFT JOIN 仍為供應商保留一列；COUNT(*) 會把這列算成 1。",
+      "afterExplanation": "COUNT(p.product_id) 不計算 NULL，新合作供應商的商品數由錯誤的 1 改為正確的 0，其餘供應商不變。",
+      "reason": "COUNT(*) 計算資料列；COUNT(欄位) 計算該欄不是 NULL 的列。在 LEFT JOIN 的零筆資料情境下，兩者不能互換。"
+    },
+    {
+      "id": "c03",
+      "title": "03｜取消訂單能算營收嗎？",
+      "question": "2026-11-10 至 2026-11-18 的已完成交易共有幾張訂單，營收是多少？",
+      "beforeSQL": "SELECT COUNT(DISTINCT s.sale_id) AS order_count,\n       SUM(si.quantity * si.unit_price) AS revenue\nFROM sales AS s\nJOIN sale_items AS si ON si.sale_id = s.sale_id\nWHERE s.sold_at >= '2026-11-10'\n  AND s.sold_at < '2026-11-19'\nORDER BY revenue ASC;",
+      "afterSQL": "SELECT COUNT(DISTINCT s.sale_id) AS order_count,\n       SUM(si.quantity * si.unit_price) AS revenue\nFROM sales AS s\nJOIN sale_items AS si ON si.sale_id = s.sale_id\nWHERE s.sold_at >= '2026-11-10'\n  AND s.sold_at < '2026-11-19'\n  AND s.status = 'completed'\nORDER BY revenue ASC;",
+      "beforeExplanation": "未篩選狀態時，兩張取消訂單也被計入，共 16 張；取消訂單金額合計 1,104 元。",
+      "afterExplanation": "加入 completed 條件後只剩 14 張已完成訂單，營收減少 1,104 元，才符合題目對營收的定義。",
+      "reason": "SQL 能執行不代表商業意義正確。狀態條件影響營收與銷量；COUNT(DISTINCT sale_id) 避免一張多明細訂單被重複計數。日期用小於隔日零時，才能完整包含 11 月 18 日。"
+    },
+    {
+      "id": "c04",
+      "title": "04｜直接連接兩種明細會重複加總",
+      "question": "商品 1「原味鮮乳」的期初、進貨、已完成銷量與現有庫存各是多少？",
+      "beforeSQL": "SELECT p.product_id, p.name, p.opening_stock,\n       COALESCE(SUM(r.quantity), 0) AS received_quantity,\n       SUM(CASE WHEN s.status = 'completed'\n                THEN si.quantity ELSE 0 END) AS sold_quantity,\n       p.opening_stock + COALESCE(SUM(r.quantity), 0)\n         - SUM(CASE WHEN s.status = 'completed'\n                    THEN si.quantity ELSE 0 END) AS current_stock\nFROM products AS p\nLEFT JOIN stock_receipts AS r ON r.product_id = p.product_id\nLEFT JOIN sale_items AS si ON si.product_id = p.product_id\nLEFT JOIN sales AS s ON s.sale_id = si.sale_id\nWHERE p.product_id = 1\nGROUP BY p.product_id, p.name, p.opening_stock\nORDER BY p.product_id ASC;",
+      "afterSQL": "WITH received AS (\n  SELECT product_id, SUM(quantity) AS received_quantity\n  FROM stock_receipts\n  GROUP BY product_id\n),\nsold AS (\n  SELECT si.product_id, SUM(si.quantity) AS sold_quantity\n  FROM sale_items AS si\n  JOIN sales AS s ON s.sale_id = si.sale_id\n  WHERE s.status = 'completed'\n  GROUP BY si.product_id\n),\ninventory AS (\n  SELECT p.product_id, p.name, p.opening_stock, p.reorder_level,\n         COALESCE(r.received_quantity, 0) AS received_quantity,\n         COALESCE(s.sold_quantity, 0) AS sold_quantity,\n         p.opening_stock + COALESCE(r.received_quantity, 0)\n           - COALESCE(s.sold_quantity, 0) AS current_stock\n  FROM products AS p\n  LEFT JOIN received AS r ON r.product_id = p.product_id\n  LEFT JOIN sold AS s ON s.product_id = p.product_id\n)\nSELECT product_id, name, opening_stock,\n       received_quantity, sold_quantity, current_stock\nFROM inventory\nWHERE product_id = 1\nORDER BY product_id ASC;",
+      "beforeExplanation": "商品 1 有 2 筆進貨和 5 筆銷售明細（含 1 筆取消）；直接連接變成 2 × 5＝10 列。進貨被算成 150、已完成銷量被算成 52，庫存錯算為 110。",
+      "afterExplanation": "先把兩種明細各自依商品彙總，再連接回商品。期初 12、進貨 30、已完成銷量 26，正確庫存為 16。",
+      "reason": "兩個一對多關係直接相連，會讓每筆進貨與每筆銷售互相配對。SUM(DISTINCT quantity) 也不是通用修正，因為相同數量的不同真實交易仍應分別計入；應先彙總再 JOIN。"
+    }
+  ]
+}
+

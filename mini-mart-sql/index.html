@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#173f35">
+  <meta name="description" content="從一間便利商店出發，認識商品、銷售與庫存之間的關係。包含 ERD、樣本資料、可執行 SQL 與結果比較。">
+  <title>角落選物 MINI MART｜商品與庫存 SQL 實驗室</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至主要內容</a>
+  <aside class="sidebar">
+    <a class="brand" href="#overview" aria-label="角落選物，回到總覽"><span class="brand-icon">m<span>＋</span></span><span>角落選物<small>MINI MART · SQL LAB</small></span></a>
+    <div class="sidebar-label">一間小店的資料日常</div>
+    <nav aria-label="主要導覽">
+      <a href="#overview" data-nav="overview"><span class="nav-icon">◫</span>案例總覽<span class="nav-number">01</span></a>
+      <a href="#design" data-nav="design"><span class="nav-icon">⌘</span>資料庫設計<span class="nav-number">02</span></a>
+      <a href="#lab" data-nav="lab"><span class="nav-icon">›_</span>SQL 實驗室<span class="nav-number">03</span></a>
+      <a href="#compare" data-nav="compare"><span class="nav-icon">⇄</span>結果比較<span class="nav-number">04</span></a>
+      <a href="#guide" data-nav="guide"><span class="nav-icon">▤</span>作品解說<span class="nav-number">05</span></a>
+    </nav>
+    <div class="sidebar-note"><span class="dot"></span> 從資料，到理解<p>每一筆進貨與銷售，<br>都能用 SQL 找到答案。</p></div>
+    <div class="sidebar-bottom"><span>資料庫管理實作</span><small>自建模擬資料 · 2026.11.18</small></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span id="breadcrumb">WORKSPACE / 案例總覽</span><div class="engine-status" id="engine-status" role="status"><span class="dot"></span>資料準備中</div></header>
+    <main id="main" tabindex="-1"><div class="loading-card"><div class="spinner"></div><h1>小店準備開門中</h1><p>正在載入商品資料與 SQL 查詢引擎。</p></div></main>
+    <footer><span>角落選物 MINI MART</span><span>資料庫管理實作 · SQLite / sql.js · <a href="./vendor/LICENSE" target="_blank" rel="noopener">開源授權</a></span></footer>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript>本作品需要啟用 JavaScript，才能執行 SQL 及顯示資料。</noscript>
+</body>
+</html>
