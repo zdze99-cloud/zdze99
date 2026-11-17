@@ -63,20 +63,32 @@ SQL 編輯框並非按題號回傳固定答案。編輯後的內容會交給 **s
 
 ## 部署到 GitHub Pages
 
-本次使用[既有儲存庫 zdze99-cloud/zdze99](https://github.com/zdze99-cloud/zdze99)，將新作品放在全新的 `mini-mart-sql/` 子資料夾，**保留原有 `11446011` 作業與其他檔案**。
+本次使用[既有儲存庫 zdze99-cloud/zdze99](https://github.com/zdze99-cloud/zdze99)，已將新作品發布於全新的 `mini-mart-sql/` 子資料夾，**保留原有 `11446011` 作業與其他檔案**。
 
-**目前狀態：待實際部署與驗證。** 預計作業網址為 [https://zdze99-cloud.github.io/zdze99/mini-mart-sql/](https://zdze99-cloud.github.io/zdze99/mini-mart-sql/)。這是依儲存庫與資料夾位置預計的路徑，尚不能據此認定發布成功。
+**目前狀態：已部署，公開版已完成操作驗證。** 可直接開啟作業網址：[角落選物 MINI MART](https://zdze99-cloud.github.io/zdze99/mini-mart-sql/)。
+
+若日後需要重新上傳或調整部署，請沿用以下資料夾及設定：
 
 1. 登入 GitHub，開啟既有儲存庫 `zdze99-cloud/zdze99`，確認使用 `main` 分支。
 2. 在儲存庫最外層新增 `mini-mart-sql/` 資料夾，將這份網站全部內容放入其中。正確位置是 `mini-mart-sql/index.html`、`mini-mart-sql/app.js`、`mini-mart-sql/vendor/` 等；不要移到儲存庫根目錄，也不要再包成兩層 `mini-mart-sql/mini-mart-sql/`。
 3. 保留 `vendor` 資料夾及其內的 JavaScript、WASM 與授權檔；保留交付內容中的 `.nojekyll`。檔名與大小寫不要任意更改。只新增本作品資料夾，不覆寫或刪除原有 `11446011` 作業。
 4. 提交檔案後，開啟儲存庫的 **Settings → Pages**，先確認既有發布設定。
-5. 預計發布來源為 **Deploy from a branch**、分支 `main`、資料夾 **/(root)**；如果已是此設定，直接保留。網站雖然存放在子資料夾，Pages 的來源仍是儲存庫根目錄。
+5. 本次發布來源為 **Deploy from a branch**、分支 `main`、資料夾 **/(root)**，後續更新請保留此設定。網站雖然存放在子資料夾，Pages 的來源仍是儲存庫根目錄。
 6. 等待部署完成。可在 **Actions** 查看 Pages 部署是否成功，再回到 **Settings → Pages** 確認網站發布狀態。
-7. 本作品的網址需在儲存庫 Pages 網址後加上 `mini-mart-sql/`，預計為 `https://zdze99-cloud.github.io/zdze99/mini-mart-sql/`；提交前必須實際開啟驗證，不要提交儲存庫原始碼網址。
+7. 本作品網址在儲存庫 Pages 網址後加上 `mini-mart-sql/`，實際公開網址為 `https://zdze99-cloud.github.io/zdze99/mini-mart-sql/`；更新後請重新開啟驗證，不要提交儲存庫原始碼網址。
 8. 用瀏覽器的私密視窗開啟本作品網址，測試不同分頁、資料表、SQL 執行、錯誤訊息及結果比較；另確認原有作業網址仍可使用。
 
 網站使用相對路徑載入資源，適合放在上述 GitHub Pages 子資料夾。若畫面存在但 SQL 無法執行，先確認 `mini-mart-sql/vendor/` 及 WASM 檔案是否完整上傳；若顯示找不到網頁，先確認 Pages 已完成部署、網址包含末尾的 `mini-mart-sql/`，以及檔案確實位於 `mini-mart-sql/index.html`。
+
+## 已完成的驗收
+
+- 資料庫共六張表、100 筆模擬資料；公開版已確認 SQLite 成功載入。
+- 十題標準 SQL 與四組比較中的八段 SQL，皆已使用 sql.js 驗證，與提供的預期結果一致。
+- 公開版第 1 題原始查詢得到 9 筆；將條件改為 `unit_price < 30` 後得到 3 筆，確認編輯內容確實影響結果。
+- 公開版輸入不存在的欄位後，確實顯示 `no such column` 引擎錯誤。
+- 公開版第 3 組比較重新執行：修改前計入 16 張單、金額 NT$ 8,827；排除取消單後為 14 張完成單、營收 NT$ 7,723。
+
+以上為交付時的驗證結果。若之後修改資料或程式，請再次執行相關檢查。網站已發布不代表已替你寄出作業。
 
 ## 提交前檢查
 
